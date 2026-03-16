@@ -2,6 +2,8 @@
 
 public class LoginViewModel : BaseViewModel
 {
+
+
     private string _login = string.Empty;
     public string Login
     {
@@ -16,18 +18,25 @@ public class LoginViewModel : BaseViewModel
         set { _haslo = value; OnPropertyChanged(); }
     }
 
+    public string Rola { get; private set; } = string.Empty;
+
     public bool Zaloguj()
     {
-        string connStr = "Data Source=.\\SQLEXPRESS;Initial Catalog=TwojaBazaDanych;Integrated Security=True";
-        using SqlConnection conn = new(connStr);
+        string connStr = @"Data Source=.\SQLEXPRESS;Initial Catalog=BazaPublikacjiUBB;Integrated Security=True;TrustServerCertificate=True;";
+        using var conn = new SqlConnection(connStr);
         conn.Open();
 
-        string query = "SELECT COUNT(*) FROM Uzytkownik WHERE Login = @login AND Haslo = @haslo";
+        string query = "SELECT Rola FROM Uzytkownik WHERE Login = @login AND Haslo = @haslo";
         using SqlCommand cmd = new(query, conn);
         cmd.Parameters.AddWithValue("@login", Login);
         cmd.Parameters.AddWithValue("@haslo", Haslo);
 
-        int count = (int)cmd.ExecuteScalar();
-        return count > 0;
+        var result = cmd.ExecuteScalar();
+        if (result != null)
+        {
+            Rola = result.ToString();
+            return true;
+        }
+        return false;
     }
 }
