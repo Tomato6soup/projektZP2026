@@ -209,7 +209,167 @@ namespace BazaPublikacji_app
                 AutoScroll = true
             };
             zakStronaGlowna.Controls.Add(pnlUlubione);
-            
+            // ---------- PANEL KARTY ----------
+            pnlPublikacje = new FlowLayoutPanel { Dock = DockStyle.Fill, AutoScroll = true, WrapContents = true };
+            zakPublikacje.Controls.Add(pnlPublikacje);
+
+            pnlProjekty = new FlowLayoutPanel { Dock = DockStyle.Fill, AutoScroll = true, WrapContents = true };
+            zakProjekty.Controls.Add(pnlProjekty);
+
+            pnlKonferencje = new FlowLayoutPanel { Dock = DockStyle.Fill, AutoScroll = true, WrapContents = true };
+            zakKonferencje.Controls.Add(pnlKonferencje);
+
+            // ---------- PRZYCISK DODAWANIA PUBLIKACJI DLA ADMIN ----------
+            if (rolaUzytkownika == "Administrator")
+            {
+                var btnDodajPublikacje = new Button
+                {
+                    Text = "Dodaj publikację",
+                    Location = new Point(panelGorny.Width - 160, 15),
+                    Width = 150,
+                    Height = 30,
+                    Anchor = AnchorStyles.Top | AnchorStyles.Right
+                };
+                btnDodajPublikacje.Click += BtnDodajPublikacje_Click;
+                panelGorny.Controls.Add(btnDodajPublikacje);
+            }
+
+            // ---------- TEMA DOMYŚLNA ----------
+            darkTheme = true;
+            UstawTeme();
+        }
+
+        // ----------------- ŁADOWANIE DANYCH -----------------
+        private void ZaladujDane()
+        {
+            publikacjeVM.ZaladujPublikacje();
+            projektyVM.ZaladujProjekty();
+            konferencjeVM.ZaladujKonferencje();
+        }
+
+        // ----------------- WYŚWIETLANIE -----------------
+        private void WyswietlWszystkieZakladki()
+        {
+            WyswietlPublikacje();
+            WyswietlProjekty();
+            WyswietlKonferencje();
+            WyswietlUlubione();
+        }
+
+        private void WyswietlPowitanie()
+        {
+            lblPowitanie.Text = $"Witaj, {zalogowanyUzytkownik}!";
+        }
+
+        private void WyswietlPublikacje()
+        {
+            pnlPublikacje.Controls.Clear();
+            foreach (var pub in publikacjeVM.Publikacje)
+                pnlPublikacje.Controls.Add(StworzCardPublikacja(pub));
+        }
+
+        private void WyswietlProjekty()
+        {
+            pnlProjekty.Controls.Clear();
+            foreach (var proj in projektyVM.Projekty)
+                pnlProjekty.Controls.Add(StworzCardProjekt(proj));
+        }
+
+        private void WyswietlKonferencje()
+        {
+            pnlKonferencje.Controls.Clear();
+            foreach (var konf in konferencjeVM.Konferencje)
+                pnlKonferencje.Controls.Add(StworzCardKonferencja(konf));
+        }
+
+        private void WyswietlUlubione()
+        {
+            pnlUlubione.Controls.Clear();
+            foreach (var pub in publikacjeVM.UlubionePublikacje)
+                pnlUlubione.Controls.Add(StworzCardPublikacja(pub));
+        }
+
+        // ----------------- TEMAT -----------------
+        private void PrzelaczTeme()
+        {
+            darkTheme = !darkTheme;
+            UstawTeme();
+        }
+
+        private void UstawTeme()
+        {
+            // Kolory
+            Color backMain = darkTheme ? Color.FromArgb(40, 40, 60) : Color.White;
+            Color backTop = darkTheme ? Color.FromArgb(60, 60, 90) : Color.LightGray;
+            Color backSide = darkTheme ? Color.FromArgb(30, 30, 50) : Color.LightGray;
+            Color backCard = darkTheme ? Color.FromArgb(50, 50, 70) : Color.White;
+            Color foreColor = darkTheme ? Color.White : Color.Black;
+            Color hoverCard = darkTheme ? Color.FromArgb(180, 150, 255) : Color.FromArgb(240, 240, 255);
+            Color btnCardColor = darkTheme ? Color.FromArgb(70, 70, 90) : Color.White;
+
+            // Kolory formy i paneli
+            this.BackColor = backMain;
+            panelGorny.BackColor = backTop;
+            panelBoczny.BackColor = backSide;
+
+            foreach (Control c in panelGorny.Controls)
+            {
+                c.BackColor = darkTheme ? Color.FromArgb(80, 80, 100) : Color.White;
+                c.ForeColor = foreColor;
+            }
+
+            foreach (Control c in panelBoczny.Controls)
+            {
+                if (c is Button btn)
+                {
+                    btn.BackColor = backSide;
+                    btn.ForeColor = foreColor;
+                }
+            }
+
+            // Panel kart
+            UpdateCardsColors(pnlPublikacje, backCard, btnCardColor, foreColor, hoverCard);
+            UpdateCardsColors(pnlProjekty, backCard, btnCardColor, foreColor, hoverCard);
+            UpdateCardsColors(pnlKonferencje, backCard, btnCardColor, foreColor, hoverCard);
+            UpdateCardsColors(pnlUlubione, backCard, btnCardColor, foreColor, hoverCard);
+
+            foreach (TabPage tab in zakladki.TabPages)
+            {
+                tab.BackColor = backMain;
+                foreach (Control c in tab.Controls)
+                    if (c is Label lbl) lbl.ForeColor = foreColor;
+            }
+        }
+
+        private void UpdateCardsColors(FlowLayoutPanel panel, Color backCard, Color btnCardColor, Color foreColor, Color hoverCard)
+        {
+            foreach (Control c in panel.Controls)
+            {
+                if (c is Panel card)
+                {
+                    card.BackColor = backCard;
+
+                    card.MouseEnter -= Card_MouseEnter;
+                    card.MouseLeave -= Card_MouseLeave;
+                    card.MouseEnter += Card_MouseEnter;
+                    card.MouseLeave += Card_MouseLeave;
+
+                    foreach (Control child in card.Controls)
+                    {
+                        if (child is Button btn)
+                        {
+                            btn.BackColor = btnCardColor;
+                            btn.ForeColor = foreColor;
+                        }
+                        else child.ForeColor = foreColor;
+                    }
+
+                    void Card_MouseEnter(object s, EventArgs e) => card.BackColor = hoverCard;
+                    void Card_MouseLeave(object s, EventArgs e) => card.BackColor = backCard;
+                }
+            }
+        }
+
         }
     }
 }
