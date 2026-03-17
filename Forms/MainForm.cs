@@ -114,6 +114,102 @@ namespace BazaPublikacji_app
             };
             btnFiltruj.Click += BtnFiltruj_Click;
             panelGorny.Controls.Add(btnFiltruj);
+
+            // --- Przycisk zmiany tematu ---
+            btnTemat = new Button
+            {
+                Text = "🌙",
+                Location = new Point(640, 12),
+                Width = 50,
+                Height = 30
+            };
+            btnTemat.Click += (s, e) => PrzelaczTeme();
+            panelGorny.Controls.Add(btnTemat);
+
+            // --- Panel szczegółów po prawej stronie ---
+            pnlDetails = new Panel
+            {
+                Dock = DockStyle.Right,
+                Width = 300,
+                BackColor = Color.WhiteSmoke,
+                Visible = false
+            };
+            txtDetails = new TextBox
+            {
+                Multiline = true,
+                Dock = DockStyle.Fill,
+                ReadOnly = true,
+                ScrollBars = ScrollBars.Vertical,
+                Font = new Font("Segoe UI", 10)
+            };
+            pnlDetails.Controls.Add(txtDetails);
+
+            // --- Przycisk zamknięcia panelu szczegółów ---
+            Button btnClose = new Button
+            {
+                Text = "✖",
+                Size = new Size(25, 25),
+                Location = new Point(pnlDetails.Width - 35, 5)
+            };
+            btnClose.Click += (s, e) => pnlDetails.Visible = false;
+            pnlDetails.Controls.Add(btnClose);
+            btnClose.BringToFront();
+
+            Controls.Add(pnlDetails);
+            pnlDetails.BringToFront();
+
+            // ---------- TABCONTROL ----------
+            zakladki = new TabControl
+            {
+                Dock = DockStyle.Fill,
+                Alignment = TabAlignment.Top
+            };
+            Controls.Add(zakladki);
+            zakladki.BringToFront();
+
+            var zakStronaGlowna = new TabPage("Strona główna") { Name = "Strona główna" };
+            var zakProjekty = new TabPage("Projekty") { Name = "Projekty" };
+            var zakPublikacje = new TabPage("Publikacje") { Name = "Publikacje" };
+            var zakKonferencje = new TabPage("Konferencje") { Name = "Konferencje" };
+            zakladki.TabPages.AddRange(new[] { zakStronaGlowna, zakProjekty, zakPublikacje, zakKonferencje });
+
+            // ---------- STRONA GŁÓWNA ----------
+            lblPowitanie = new Label
+            {
+                Font = new Font("Segoe UI", 16, FontStyle.Bold),
+                Location = new Point(20, 20),
+                AutoSize = true
+            };
+            zakStronaGlowna.Controls.Add(lblPowitanie);
+
+            var lblOpis = new Label
+            {
+                Text = "W tej bazie znajdziesz publikacje, projekty i konferencje.\n" +
+                       "Możesz je przeglądać, filtrować i dodawać do ulubionych.\n" +
+                       "Używaj wyszukiwarki i filtrów, aby szybko znaleźć potrzebne informacje.",
+                Font = new Font("Segoe UI", 11, FontStyle.Regular),
+                Location = new Point(20, 60),
+                AutoSize = true
+            };
+            zakStronaGlowna.Controls.Add(lblOpis);
+
+            var lblUlubione = new Label
+            {
+                Text = "Ulubione publikacje:",
+                Font = new Font("Segoe UI", 14, FontStyle.Bold),
+                Location = new Point(20, 120),
+                AutoSize = true
+            };
+            zakStronaGlowna.Controls.Add(lblUlubione);
+
+            pnlUlubione = new FlowLayoutPanel
+            {
+                Location = new Point(20, 160),
+                Size = new Size(740, 400),
+                AutoScroll = true
+            };
+            zakStronaGlowna.Controls.Add(pnlUlubione);
+            
         }
     }
 }
