@@ -370,6 +370,65 @@ namespace BazaPublikacji_app
             }
         }
 
+ // ----------------- FILTR -----------------
+ private void BtnFiltruj_Click(object sender, EventArgs e)
+ {
+     // Tworzenie formularza filtrów
+     Form filtrForm = new Form
+     {
+         Text = "Filtr publikacji",
+         Size = new Size(350, 220),
+         StartPosition = FormStartPosition.CenterParent
+     };
+
+     Label lblRok = new Label { Text = "Rok:", Location = new Point(20, 20) };
+     ComboBox cmbRok = new ComboBox { Location = new Point(120, 20), Width = 180, DropDownStyle = ComboBoxStyle.DropDownList };
+     Label lblTyp = new Label { Text = "Typ:", Location = new Point(20, 60) };
+     ComboBox cmbTyp = new ComboBox { Location = new Point(120, 60), Width = 180, DropDownStyle = ComboBoxStyle.DropDownList };
+     Label lblWydawnictwo = new Label { Text = "Wydawnictwo:", Location = new Point(20, 100) };
+     ComboBox cmbWydawnictwo = new ComboBox { Location = new Point(120, 100), Width = 180, DropDownStyle = ComboBoxStyle.DropDownList };
+
+     using (SqlConnection conn = new SqlConnection(connString))
+     {
+         conn.Open();
+         SqlCommand cmd = new SqlCommand("SELECT DISTINCT Rok_Wydania FROM Publikacja ORDER BY Rok_Wydania", conn);
+         SqlDataReader reader = cmd.ExecuteReader();
+         while (reader.Read()) cmbRok.Items.Add(reader["Rok_Wydania"].ToString());
+         reader.Close();
+
+         cmd.CommandText = "SELECT DISTINCT Typ FROM Publikacja ORDER BY Typ";
+         reader = cmd.ExecuteReader();
+         while (reader.Read()) cmbTyp.Items.Add(reader["Typ"].ToString());
+         reader.Close();
+
+         cmd.CommandText = "SELECT DISTINCT Wydawnictwo FROM Publikacja ORDER BY Wydawnictwo";
+         reader = cmd.ExecuteReader();
+         while (reader.Read()) cmbWydawnictwo.Items.Add(reader["Wydawnictwo"].ToString());
+     }
+
+     Button btnZastosuj = new Button { Text = "Zastosuj", Location = new Point(120, 150), Width = 100 };
+     btnZastosuj.Click += (s, ev) =>
+     {
+         ZastosujFiltr(cmbRok.SelectedItem?.ToString(), cmbTyp.SelectedItem?.ToString(), cmbWydawnictwo.SelectedItem?.ToString());
+         filtrForm.Close();
+     };
+
+     filtrForm.Controls.AddRange(new Control[] { lblRok, cmbRok, lblTyp, cmbTyp, lblWydawnictwo, cmbWydawnictwo, btnZastosuj });
+     filtrForm.ShowDialog();
+ }
+
+ private void ZastosujFiltr(string rok, string typ, string wydawnictwo)
+ {
+     pnlPublikacje.Controls.Clear();
+     var lista = publikacjeVM.Publikacje.AsEnumerable();
+
+     if (!string.IsNullOrEmpty(rok) && int.TryParse(rok, out int r)) lista = lista.Where(p => p.Rok_Wydania == r);
+     if (!string.IsNullOrEmpty(typ)) lista = lista.Where(p => p.Typ == typ);
+     if (!string.IsNullOrEmpty(wydawnictwo)) lista = lista.Where(p => p.Wydawnictwo == wydawnictwo);
+
+     foreach (var pub in lista) pnlPublikacje.Controls.Add(StworzCardPublikacja(pub));
+ }
+
         }
     }
 }
