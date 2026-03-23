@@ -429,6 +429,12 @@ namespace BazaPublikacji_app
      foreach (var pub in lista) pnlPublikacje.Controls.Add(StworzCardPublikacja(pub));
  }
 
+ 
+ // ----------------- DODAWANIE PUBLIKACJI -----------------
+ private void BtnDodajPublikacje_Click(object sender, EventArgs e)
+ {
+     MessageBox.Show("Tutaj można dodać nową publikację (do implementacji)");
+ }
         }
     }
 }
