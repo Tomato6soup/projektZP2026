@@ -100,11 +100,10 @@ _Konferencja_ (ID, Nazwa, Data, Miejsce);
 
 _Wydział_ (ID, Nazwa);
 
-<img width="1408" height="768" alt="Gemini_Generated_Image_2ubyhd2ubyhd2uby" src="https://github.com/user-attachments/assets/e1ade36e-b32f-44cf-8050-126c63c0215c" />
 
 **Architektura systemu**
+<img width="1408" height="768" alt="Gemini_Generated_Image_2ubyhd2ubyhd2uby" src="https://github.com/user-attachments/assets/e1ade36e-b32f-44cf-8050-126c63c0215c" />
 
-<img width="1408" height="768" alt="Gemini_Generated_Image_5w20m5w20m5w20m5(1)" src="https://github.com/user-attachments/assets/fe18bcfd-2f2b-4dbf-8cc1-e5d9207963e5" />
 
 
 **Technologie + uzasadnienie**
