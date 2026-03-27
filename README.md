@@ -1,8 +1,8 @@
-**Info o projekcie**
+# Info o projekcie
 
 <img width="1408" height="768" alt="Gemini_Generated_Image_qy6ajgqy6ajgqy6a" src="https://github.com/user-attachments/assets/51237d2e-22db-4eb8-8b74-bcbc157c8dc4" />
 
-**Opis projektu**
+## Opis projektu
 
 _Projekt to aplikacja desktopowa stworzona w technologii C# z wykorzystaniem WPF oraz wzorca MVVM, służąca do zarządzania i przeglądania publikacji naukowych oraz projektów. System umożliwia użytkownikom wyszukiwanie, filtrowanie oraz przeglądanie informacji o pracach naukowych i projektach, a administratorowi dodatkowo zarządzanie danymi._
 
@@ -26,6 +26,7 @@ _Aplikacja umożliwia:_
 <img width="1408" height="768" alt="Gemini_Generated_Image_jzik8jzik8jzik8j" src="https://github.com/user-attachments/assets/18beadd2-9be4-4e0c-92de-ad0103c1e623" />
 
 _System jest przeznaczony dla:_
+
  Studentów – przeglądanie projektów i publikacji;
  
  Pracowników naukowych – dostęp do informacji o projektach i publikacjach;
@@ -53,10 +54,11 @@ _Skalowalność_ – możliwość rozbudowy o nowe funkcjonalności.
 _Dostępność_ – wsparcie dla trybu jasnego i ciemnego.
 _Spójność danych_ – wykorzystanie SQL Server do zarządzania danymi.
 
-**Przypadki użycia**
+## Przypadki użycia
 <img width="954" height="632" alt="plan_uzycia_final drawio" src="https://github.com/user-attachments/assets/179a1ca9-6ac0-4078-8cda-2222ee730a03" />
 
 **1. Logowanie użytkownika**
+
 Użytkownik uruchamia aplikację
 
 Wprowadza login i hasło
@@ -66,6 +68,7 @@ System weryfikuje dane
 Użytkownik zostaje zalogowany i widzi widok dostosowany do swojej roli
 
 **2. Wyszukiwanie publikacji**
+
 Użytkownik przechodzi do zakładki „Publikacje”
 
 Wpisuje tytuł w wyszukiwarce
@@ -74,6 +77,7 @@ System wyświetla pasujące wyniki
 
 
 **3. Dodawanie publikacji (Administrator)**
+
 Administrator przechodzi do sekcji publikacji
 
 Wybiera opcję „Dodaj publikację”
@@ -82,7 +86,9 @@ Wprowadza dane
 
 System zapisuje nową publikację w bazie danych
 
-**Model danych**
+## Model danych
+
+<img width="1408" height="768" alt="Gemini_Generated_Image_87942i87942i8794(1)" src="https://github.com/user-attachments/assets/71725402-ddab-40e1-9987-570e79f9f60f" />
 
 System przechowuje dane w postaci następujących encji:
 
@@ -92,7 +98,7 @@ _Publikacja_ (ID, Tytuł, Rok_Wydania, Typ, Wydawnictwo, PlikPDF, Strony);
 
 _Projekt_ (ID, Tytuł, Opis, DataRozpoczecia, DataZakonczenia);
 
-_Pracownik _(ID, Imię, Nazwisko, Stanowisko, Wydział, Adres, E-mail);
+_Pracownik_ (ID, Imię, Nazwisko, Stanowisko, Wydział, Adres, E-mail);
 
 _Strona_(ID, Nazwa, Typ, Kraj);
 
@@ -101,12 +107,25 @@ _Konferencja_ (ID, Nazwa, Data, Miejsce);
 _Wydział_ (ID, Nazwa);
 
 
-**Architektura systemu**
+## Architektura systemu
 <img width="1408" height="768" alt="Gemini_Generated_Image_2ubyhd2ubyhd2uby" src="https://github.com/user-attachments/assets/e1ade36e-b32f-44cf-8050-126c63c0215c" />
 
+**Aplikacja została zaprojektowana w architekturze:**
+
+Frontend (View) – interfejs użytkownika w WPF;
+
+ViewModel – logika prezentacji (MVVM);
+
+Model – dane i logika biznesowa;
+
+Baza danych – SQL Server;
+
+**Schemat:**
+
+Użytkownik → WPF (View) → ViewModel → Model → SQL Server
 
 
-**Technologie + uzasadnienie**
+## Technologie + uzasadnienie
 
 C# – główny język programowania, silne wsparcie dla aplikacji desktopowych;
 
@@ -123,7 +142,7 @@ GitHub – kontrola wersji i współpraca zespołowa;
 Visual Studio – środowisko programistyczne.
 
 
-**Autorzy:**
+# Autorzy:
 <img width="1408" height="768" alt="Gemini_Generated_Image_jjjyeajjjyeajjjy" src="https://github.com/user-attachments/assets/95e9d35e-f846-417d-ab10-7319435f4538" />
 
-_Polina Lysohor, Iryna Hrysheta, Anna Tkach._
+## _Polina Lysohor, Iryna Hrysheta, Anna Tkach._
