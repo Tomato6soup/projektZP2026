@@ -597,10 +597,107 @@ namespace BazaPublikacji_app
      return card;
  }
  
- // ----------------- DODAWANIE PUBLIKACJI -----------------
+  // ----------------- DODAWANIE PUBLIKACJI -----------------
  private void BtnDodajPublikacje_Click(object sender, EventArgs e)
  {
-     MessageBox.Show("Tutaj można dodać nową publikację (do implementacji)");
+     var dlg = new Form
+     {
+         Text = "Dodaj publikację",
+         Size = new Size(420, 340),
+         StartPosition = FormStartPosition.CenterParent,
+         FormBorderStyle = FormBorderStyle.FixedDialog,
+         MaximizeBox = false,
+         MinimizeBox = false
+     };
+
+     var lblTytul = new Label { Text = "Tytuł:", Location = new Point(20, 20), AutoSize = true };
+     var txtTytul = new TextBox { Location = new Point(140, 18), Width = 240 };
+
+     var lblRok = new Label { Text = "Rok wydania:", Location = new Point(20, 60), AutoSize = true };
+     var txtRok = new TextBox { Location = new Point(140, 58), Width = 240 };
+
+     var lblTyp = new Label { Text = "Typ:", Location = new Point(20, 100), AutoSize = true };
+     var txtTyp = new TextBox { Location = new Point(140, 98), Width = 240 };
+
+     var lblWydawnictwo = new Label { Text = "Wydawnictwo:", Location = new Point(20, 140), AutoSize = true };
+     var txtWydawnictwo = new TextBox { Location = new Point(140, 138), Width = 240 };
+
+     var lblPlik = new Label { Text = "Plik PDF:", Location = new Point(20, 180), AutoSize = true };
+     var txtPlik = new TextBox { Location = new Point(140, 178), Width = 200, ReadOnly = true };
+     var btnBrowse = new Button { Text = "Wybierz...", Location = new Point(350, 176), Size = new Size(30, 24) };
+
+     var lblStrony = new Label { Text = "Strony:", Location = new Point(20, 220), AutoSize = true };
+     var txtStrony = new TextBox { Location = new Point(140, 218), Width = 240 };
+
+     var btnOk = new Button { Text = "Dodaj", Location = new Point(140, 260), Width = 100 };
+     var btnCancel = new Button { Text = "Anuluj", Location = new Point(280, 260), Width = 100 };
+
+     btnBrowse.Click += (s, ev) =>
+     {
+         using (var ofd = new OpenFileDialog { Filter = "PDF files (*.pdf)|*.pdf|All files (*.*)|*.*", Title = "Wybierz plik PDF" })
+         {
+             if (ofd.ShowDialog(this) == DialogResult.OK) txtPlik.Text = ofd.FileName;
+         }
+     };
+
+     btnCancel.Click += (s, ev) => dlg.Close();
+
+     btnOk.Click += (s, ev) =>
+     {
+         string tytul = txtTytul.Text.Trim();
+         if (string.IsNullOrEmpty(tytul))
+         {
+             MessageBox.Show("Tytuł jest wymagany.", "Walidacja", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+             return;
+         }
+
+         int? rokVal = null;
+         if (int.TryParse(txtRok.Text.Trim(), out int rokParsed)) rokVal = rokParsed;
+
+         int? stronyVal = null;
+         if (int.TryParse(txtStrony.Text.Trim(), out int stronyParsed)) stronyVal = stronyParsed;
+
+         string typ = string.IsNullOrWhiteSpace(txtTyp.Text) ? null : txtTyp.Text.Trim();
+         string wydawnictwo = string.IsNullOrWhiteSpace(txtWydawnictwo.Text) ? null : txtWydawnictwo.Text.Trim();
+         string plikPdf = string.IsNullOrWhiteSpace(txtPlik.Text) ? null : txtPlik.Text.Trim();
+
+         string correlationId = Guid.NewGuid().ToString();
+
+         try
+         {
+             using (SqlConnection conn = new SqlConnection(connString))
+             {
+                 conn.Open();
+                 string sql = "INSERT INTO Publikacja (Tytul, Rok_Wydania, Typ, Wydawnictwo, PlikPDF, Strony) VALUES (@Tytul, @Rok, @Typ, @Wydawnictwo, @PlikPDF, @Strony)";
+
+                 using (SqlCommand cmd = new SqlCommand(sql, conn))
+                 {
+                     cmd.Parameters.AddWithValue("@Tytul", (object)tytul);
+                     cmd.Parameters.AddWithValue("@Rok", (object)rokVal ?? DBNull.Value);
+                     cmd.Parameters.AddWithValue("@Typ", (object)typ ?? DBNull.Value);
+                     cmd.Parameters.AddWithValue("@Wydawnictwo", (object)wydawnictwo ?? DBNull.Value);
+                     cmd.Parameters.AddWithValue("@PlikPDF", (object)plikPdf ?? DBNull.Value);
+                     cmd.Parameters.AddWithValue("@Strony", (object)stronyVal ?? DBNull.Value);
+
+                     cmd.ExecuteNonQuery();
+                 }
+             }
+
+             // Odświeżenie widoku w bezpieczny sposób
+             publikacjeVM.ZaladujPublikacje();
+             WyswietlPublikacje();
+
+             MessageBox.Show($"Publikacja została dodana.\r\nId śledzenia: {correlationId}", "Sukces", MessageBoxButtons.OK, MessageBoxIcon.Information);
+             dlg.Close();
+         }
+         catch (Exception ex)
+         {
+             MessageBox.Show($"Wystąpił błąd podczas dodawania publikacji.\r\nId śledzenia: {correlationId}\r\n{ex.Message}", "Błąd", MessageBoxButtons.OK, MessageBoxIcon.Error);
+         }
+     };
+
+     dlg.Controls.AddRange(new Control[] { lblTytul, txtTytul, lblRok, txtRok, lblTyp, txtTyp, lblWydawnictwo, txtWydawnictwo, lblPlik, txtPlik, btnBrowse, lblStrony, txtStrony, btnOk, btnCancel });
+     dlg.ShowDialog(this);
  }
         }
     }
