@@ -128,5 +128,5 @@ Aplikacja działa w oparciu o przepływ:
 
 ---
 > [!NOTE]
-> _Wykonano w ramach projektu akademickiego 2024._
+> _Wykonano w ramach projektu akademickiego 2026._
 ---
