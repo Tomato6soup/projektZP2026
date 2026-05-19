@@ -117,7 +117,7 @@ Aplikacja działa w oparciu o przepływ:
 
 ---
 
-## Autorzy
+## Autorki
 <img width="1408" alt="Authors" src="https://github.com/user-attachments/assets/95e9d35e-f846-417d-ab10-7319435f4538" />
 
 ### Projekt został zrealizowany z pasją przez zespół deweloperski в składzie:
