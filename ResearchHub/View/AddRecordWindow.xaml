@@ -1,0 +1,40 @@
+﻿<Window x:Class="ResearchHub.View.AddRecordWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Panel Administratora - Dodaj Publikację" Height="500" Width="400"
+        WindowStartupLocation="CenterScreen" ResizeMode="NoResize" Background="#F5F5F5">
+
+    <StackPanel Margin="20">
+
+        <TextBlock Text="Tytuł publikacji:" FontWeight="Bold" Margin="0,0,0,5"/>
+        <TextBox Text="{Binding NewTitle, UpdateSourceTrigger=PropertyChanged}" Height="25" Margin="0,0,0,10"/>
+
+        <TextBlock Text="Rok wydania:" FontWeight="Bold" Margin="0,0,0,5"/>
+        <TextBox Text="{Binding NewYear, UpdateSourceTrigger=PropertyChanged}" Height="25" Margin="0,0,0,10"/>
+
+        <TextBlock Text="Typ publikacji:" FontWeight="Bold" Margin="0,0,0,5"/>
+        <ComboBox SelectedValue="{Binding NewType}" SelectedValuePath="Content" Height="25" Margin="0,0,0,10">
+            <ComboBoxItem Content="Artykul" IsSelected="True"/>
+            <ComboBoxItem Content="Ksiazka"/>
+            <ComboBoxItem Content="Konferencja"/>
+            <ComboBoxItem Content="Raport"/>
+            <ComboBoxItem Content="Monografia"/>
+            <ComboBoxItem Content="Biblioografia"/>
+            <ComboBoxItem Content="Inne"/>
+        </ComboBox>
+
+        <TextBlock Text="Wydawnictwo:" FontWeight="Bold" Margin="0,0,0,5"/>
+        <TextBox Text="{Binding NewPublisher, UpdateSourceTrigger=PropertyChanged}" Height="25" Margin="0,0,0,10"/>
+
+        <TextBlock Text="Nazwa pliku PDF (np. raport_2026.pdf):" FontWeight="Bold" Margin="0,0,0,5"/>
+        <TextBox Text="{Binding NewPdf, UpdateSourceTrigger=PropertyChanged}" Height="25" Margin="0,0,0,10"/>
+
+        <TextBlock Text="Ilość stron:" FontWeight="Bold" Margin="0,0,0,5"/>
+        <TextBox Text="{Binding NewPages, UpdateSourceTrigger=PropertyChanged}" Height="25" Margin="0,0,0,20"/>
+
+        <Button Content="Zapisz do bazy" Height="35" 
+                Command="{Binding AddPublicationCommand}" 
+                CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"
+                Background="#107C41" Foreground="White" FontWeight="Bold" BorderThickness="0"/>
+    </StackPanel>
+</Window>
