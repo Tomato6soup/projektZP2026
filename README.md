@@ -3,7 +3,7 @@
 <img width="1408" alt="Project Header" src="https://github.com/user-attachments/assets/51237d2e-22db-4eb8-8b74-bcbc157c8dc4" />
 
 ## Opis projektu
-_Projekt to **aplikacja desktopowa** stworzona w technologii **C#** z wykorzystaniem **WPF** oraz wzorca **MVVM**. Służy do zarządzania i przeglądania publikacji naukowych oraz projektów._
+_Projekt to **aplikacja desktopowa** stworzona w technologii **C#** z wykorzystaniem **WPF** oraz wzorca **MVVM**, NET wersji 10. Służy do zarządzania i przeglądania publikacji naukowych oraz projektów._
 
 _Aplikacja korzysta z bazy danych **SQL Server**, а rozwój projektu był wspierany przez system kontroli wersji **GitHub**._
 
