@@ -38,6 +38,7 @@ namespace ResearchHub.ViewModel
         private string _newPdf;
         private int _newPages;
         private string _newPhoto;
+        private readonly ThemeService _themeService;
 
         // ==========================================
         // 2. KOLEKCJE I WIDOKI
@@ -53,14 +54,14 @@ namespace ResearchHub.ViewModel
         public ObservableCollection<Projekt> MyProjectsList { get; set; }
         public ICollectionView ProjectsView { get; private set; }
         public ICollectionView ConferencesView { get; private set; }
+        public ICollectionView PublicationsView { get; private set; }
         public ICommand EditPublicationCommand { get; set; }
         public ICommand EditProjectCommand { get; set; }
         public ICommand SelectPhotoCommand { get; set; }
         public ICommand EditConferenceCommand { get; set; }
-        public ICollectionView PublicationsView { get; private set; }
         public ICommand JoinProjectCommand { get; }
         public ICommand LeaveProjectCommand { get; }
-
+        public ICommand ChangeThemeCommand { get; }
         // ==========================================
         // 3. WŁAŚCIWOŚCI BINDOWANE DO XAML
         // ==========================================
@@ -161,6 +162,15 @@ namespace ResearchHub.ViewModel
             LoadConferencesFromSql();
             LoadPublicationsFromSql();
             LoadFavoritesFromSql();
+
+            // Inicjalizacja serwisu motywów
+            _themeService = new ThemeService(_db);
+            ChangeThemeCommand = new RelayCommand(ExecuteChangeTheme);
+
+            // Ładowanie motywu użytkownika zapisanego w DB (wywołaj na końcu konstruktora, gdy znasz już CurrentUserId)
+            string savedTheme = _themeService.GetUserTheme(CurrentUserId);
+            _themeService.ApplyTheme(savedTheme);
+
             if (IsStudent) LoadMyProjectsFromSql(); // Ładujemy tylko jeśli to student
 
             // Dla publikacji:
@@ -342,6 +352,18 @@ namespace ResearchHub.ViewModel
                     }
                 }
             }
+        }
+
+        private void ExecuteChangeTheme(object obj)
+        {
+            if (obj == null) return;
+            string selectedTheme = obj.ToString(); // Pobiera np. "Pink", "Light", "Blue" z parametru przycisku
+
+            // 1. Zmień wygląd aplikacji natychmiastowo
+            _themeService.ApplyTheme(selectedTheme);
+
+            // 2. Zapisz ustawienie w bazie danych, aby pamiętało przy następnym logowaniu
+            _themeService.SaveUserTheme(CurrentUserId, selectedTheme);
         }
 
         // 3. Metoda wykonująca komendę:

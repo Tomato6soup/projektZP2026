@@ -108,7 +108,7 @@ namespace ResearchHub.View {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/ResearchHub;V1.0.0.0;component/view/editpublicationwindow.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/ResearchHub;component/view/editpublicationwindow.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\..\View\EditPublicationWindow.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);

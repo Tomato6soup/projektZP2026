@@ -70,3 +70,10 @@ D:\Ania\Documents\Programowanie(C++,HTML)\SPRAWKA_ZALICZENIA_LAB\ResearchHub\Res
 D:\Ania\Documents\Programowanie(C++,HTML)\SPRAWKA_ZALICZENIA_LAB\ResearchHub\ResearchHub\obj\Debug\net10.0-windows\View\EditProjectWindow.baml
 D:\Ania\Documents\Programowanie(C++,HTML)\SPRAWKA_ZALICZENIA_LAB\ResearchHub\ResearchHub\obj\Debug\net10.0-windows\View\EditConferenceWindow.g.cs
 D:\Ania\Documents\Programowanie(C++,HTML)\SPRAWKA_ZALICZENIA_LAB\ResearchHub\ResearchHub\obj\Debug\net10.0-windows\View\EditProjectWindow.g.cs
+D:\Ania\Documents\Programowanie(C++,HTML)\SPRAWKA_ZALICZENIA_LAB\ResearchHub\ResearchHub\obj\Debug\net10.0-windows\Themes\BlueTheme.baml
+D:\Ania\Documents\Programowanie(C++,HTML)\SPRAWKA_ZALICZENIA_LAB\ResearchHub\ResearchHub\obj\Debug\net10.0-windows\Themes\DarkTheme.baml
+D:\Ania\Documents\Programowanie(C++,HTML)\SPRAWKA_ZALICZENIA_LAB\ResearchHub\ResearchHub\obj\Debug\net10.0-windows\Themes\GreenTheme.baml
+D:\Ania\Documents\Programowanie(C++,HTML)\SPRAWKA_ZALICZENIA_LAB\ResearchHub\ResearchHub\obj\Debug\net10.0-windows\Themes\LightTheme.baml
+D:\Ania\Documents\Programowanie(C++,HTML)\SPRAWKA_ZALICZENIA_LAB\ResearchHub\ResearchHub\obj\Debug\net10.0-windows\Themes\PinkTheme.baml
+D:\Ania\Documents\Programowanie(C++,HTML)\SPRAWKA_ZALICZENIA_LAB\ResearchHub\ResearchHub\obj\Debug\net10.0-windows\Themes\YellowTheme.baml
+D:\Ania\Documents\Programowanie(C++,HTML)\SPRAWKA_ZALICZENIA_LAB\ResearchHub\ResearchHub\obj\Debug\net10.0-windows\App.baml
