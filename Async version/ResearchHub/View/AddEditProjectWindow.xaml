@@ -1,0 +1,85 @@
+﻿<Window x:Class="ResearchHub.View.AddEditProjectWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Formularz Projektu" Height="550" Width="450"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource WindowBackgroundBrush}"
+        Foreground="{DynamicResource TextPrimaryBrush}">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="Szczegóły projektu" FontSize="22" FontWeight="SemiBold" 
+                   Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,20"/>
+
+        <StackPanel Grid.Row="1">
+            <TextBlock Text="Tytuł:" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,5"/>
+            <TextBox Text="{Binding EdytowanyProjekt.Tytul, UpdateSourceTrigger=PropertyChanged}" 
+                     Background="{DynamicResource InputBackgroundBrush}" 
+                     Foreground="{DynamicResource TextPrimaryBrush}"
+                     BorderBrush="{DynamicResource BorderBrush}" 
+                     Padding="8" Margin="0,0,0,15" FontSize="14"/>
+
+            <TextBlock Text="Opis:" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,5"/>
+            <TextBox Text="{Binding EdytowanyProjekt.Opis, UpdateSourceTrigger=PropertyChanged}" 
+                     Background="{DynamicResource InputBackgroundBrush}" 
+                     Foreground="{DynamicResource TextPrimaryBrush}"
+                     BorderBrush="{DynamicResource BorderBrush}" 
+                     Padding="8" Margin="0,0,0,15" FontSize="14" 
+                     TextWrapping="Wrap" AcceptsReturn="True" Height="100"/>
+
+            <Grid Margin="0,0,0,15">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="10"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="Data rozpoczęcia:" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,5"/>
+                    <DatePicker SelectedDate="{Binding EdytowanyProjekt.DataRozpoczecia}" 
+                                Background="{DynamicResource InputBackgroundBrush}" 
+                                Foreground="{DynamicResource TextPrimaryBrush}"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2">
+                    <TextBlock Text="Data zakończenia:" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,5"/>
+                    <DatePicker SelectedDate="{Binding EdytowanyProjekt.DataZakonczenia}" 
+                                Background="{DynamicResource InputBackgroundBrush}" 
+                                Foreground="{DynamicResource TextPrimaryBrush}"/>
+                </StackPanel>
+            </Grid>
+
+            <TextBlock Text="Zdjęcie (opcjonalnie):" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,5"/>
+            <StackPanel Orientation="Horizontal">
+                <Button Content="Wybierz plik..." Click="BtnWybierzZdjecie_Click"
+                        Background="{DynamicResource InputBackgroundBrush}"
+                        Foreground="{DynamicResource TextPrimaryBrush}"
+                        BorderBrush="{DynamicResource BorderBrush}" Padding="10,5" Cursor="Hand"/>
+                <TextBlock Text="{Binding EdytowanyProjekt.NazwaPlikuZdjecia}" 
+                           Foreground="{DynamicResource TextSecondaryBrush}" 
+                           VerticalAlignment="Center" Margin="10,0,0,0" FontStyle="Italic"/>
+            </StackPanel>
+        </StackPanel>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+            <Button Content="Anuluj" Click="BtnAnuluj_Click"
+                    Background="Transparent" Foreground="{DynamicResource TextPrimaryBrush}" 
+                    BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" 
+                    Padding="15,8" Margin="0,0,10,0" Cursor="Hand"/>
+            <Button Content="Zapisz" Click="BtnZapisz_Click"
+                    Background="{DynamicResource PrimaryAccentBrush}" Foreground="White" 
+                    BorderThickness="0" Padding="20,8" FontWeight="SemiBold" Cursor="Hand">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius" Value="6"/>
+                    </Style>
+                </Button.Resources>
+            </Button>
+        </StackPanel>
+    </Grid>
+</Window>
