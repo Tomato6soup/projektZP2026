@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "uIHHqef180Y=",
+  "dgSpecHash": "9Lsnw341foE=",
   "success": true,
-  "projectFilePath": "D:\\Ania\\Documents\\Programowanie(C++,HTML)\\SPRAWKA_ZALICZENIA_LAB\\ResearchHub\\ResearchHub\\ResearchHub.csproj",
+  "projectFilePath": "D:\\Ania\\Documents\\Programowanie(C++,HTML)\\SPRAWKA_ZALICZENIA_LAB\\ResearchHub_modernizacja\\ResearchHub\\ResearchHub.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Ania\\.nuget\\packages\\microsoft.bcl.cryptography\\9.0.13\\microsoft.bcl.cryptography.9.0.13.nupkg.sha512",
     "C:\\Users\\Ania\\.nuget\\packages\\microsoft.data.sqlclient\\7.0.1\\microsoft.data.sqlclient.7.0.1.nupkg.sha512",

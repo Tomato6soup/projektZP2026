@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\Ania\\Documents\\Programowanie(C++,HTML)\\SPRAWKA_ZALICZENIA_LAB\\ResearchHub\\ResearchHub\\ResearchHub.csproj": {}
+    "D:\\Ania\\Documents\\Programowanie(C++,HTML)\\SPRAWKA_ZALICZENIA_LAB\\ResearchHub_modernizacja\\ResearchHub\\ResearchHub.csproj": {}
   },
   "projects": {
-    "D:\\Ania\\Documents\\Programowanie(C++,HTML)\\SPRAWKA_ZALICZENIA_LAB\\ResearchHub\\ResearchHub\\ResearchHub.csproj": {
+    "D:\\Ania\\Documents\\Programowanie(C++,HTML)\\SPRAWKA_ZALICZENIA_LAB\\ResearchHub_modernizacja\\ResearchHub\\ResearchHub.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Ania\\Documents\\Programowanie(C++,HTML)\\SPRAWKA_ZALICZENIA_LAB\\ResearchHub\\ResearchHub\\ResearchHub.csproj",
+        "projectUniqueName": "D:\\Ania\\Documents\\Programowanie(C++,HTML)\\SPRAWKA_ZALICZENIA_LAB\\ResearchHub_modernizacja\\ResearchHub\\ResearchHub.csproj",
         "projectName": "ResearchHub",
-        "projectPath": "D:\\Ania\\Documents\\Programowanie(C++,HTML)\\SPRAWKA_ZALICZENIA_LAB\\ResearchHub\\ResearchHub\\ResearchHub.csproj",
+        "projectPath": "D:\\Ania\\Documents\\Programowanie(C++,HTML)\\SPRAWKA_ZALICZENIA_LAB\\ResearchHub_modernizacja\\ResearchHub\\ResearchHub.csproj",
         "packagesPath": "C:\\Users\\Ania\\.nuget\\packages\\",
-        "outputPath": "D:\\Ania\\Documents\\Programowanie(C++,HTML)\\SPRAWKA_ZALICZENIA_LAB\\ResearchHub\\ResearchHub\\obj\\",
+        "outputPath": "D:\\Ania\\Documents\\Programowanie(C++,HTML)\\SPRAWKA_ZALICZENIA_LAB\\ResearchHub_modernizacja\\ResearchHub\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

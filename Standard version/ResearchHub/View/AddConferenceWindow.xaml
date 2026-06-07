@@ -1,0 +1,55 @@
+﻿<Window x:Class="ResearchHub.View.AddConferenceWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Dodaj nową konferencję" Height="450" Width="400"
+        WindowStartupLocation="CenterScreen" Background="{DynamicResource WindowBackgroundBrush}">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="Nowa Konferencja" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,20"/>
+
+        <StackPanel Grid.Row="1">
+            <TextBlock Text="Nazwa konferencji:" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,5"/>
+            <TextBox Text="{Binding EdytowanaKonferencja.Nazwa, UpdateSourceTrigger=PropertyChanged}" 
+                     Background="{DynamicResource InputBackgroundBrush}" Foreground="{DynamicResource TextPrimaryBrush}" 
+                     Padding="8" Margin="0,0,0,15" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"/>
+
+            <TextBlock Text="Miejsce (Miasto/Uczelnia):" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,5"/>
+            <TextBox Text="{Binding EdytowanaKonferencja.Miejsce, UpdateSourceTrigger=PropertyChanged}" 
+                     Background="{DynamicResource InputBackgroundBrush}" Foreground="{DynamicResource TextPrimaryBrush}" 
+                     Padding="8" Margin="0,0,0,15" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"/>
+
+            <TextBlock Text="Data wydarzenia:" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,5"/>
+            <DatePicker SelectedDate="{Binding EdytowanaKonferencja.Data}" 
+                        Background="{DynamicResource InputBackgroundBrush}" Foreground="{DynamicResource TextPrimaryBrush}" 
+                        Padding="5" Margin="0,0,0,15" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"/>
+
+            <TextBlock Text="Zdjęcie (Opcjonalnie):" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,5"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBox Text="{Binding EdytowanaKonferencja.NazwaPlikuZdjecia}" IsReadOnly="True"
+                         Background="{DynamicResource InputBackgroundBrush}" Foreground="{DynamicResource TextPrimaryBrush}" 
+                         Padding="8" Margin="0,0,10,0" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"/>
+                <Button Grid.Column="1" Content="Wybierz plik" Click="BtnWybierzZdjecie_Click" 
+                        Background="{DynamicResource TextSecondaryBrush}" Foreground="White" Padding="10,5" BorderThickness="0" Cursor="Hand"/>
+            </Grid>
+        </StackPanel>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+            <Button Content="Anuluj" Click="BtnAnuluj_Click" 
+                    Background="{DynamicResource DangerBackgroundBrush}" Foreground="{DynamicResource DangerBrush}" 
+                    Padding="15,8" Margin="0,0,10,0" BorderThickness="0" Cursor="Hand"/>
+            <Button Content="💾 Zapisz" Click="BtnZapisz_Click" 
+                    Background="{DynamicResource PrimaryAccentBrush}" Foreground="White" FontWeight="Bold" 
+                    Padding="15,8" BorderThickness="0" Cursor="Hand"/>
+        </StackPanel>
+    </Grid>
+</Window>

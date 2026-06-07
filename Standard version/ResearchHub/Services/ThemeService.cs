@@ -15,18 +15,18 @@ namespace ResearchHub.Services
         }
 
         // 1. Pobieranie motywu zalogowanego użytkownika z SQL
-        public string GetUserTheme(int userId)
+        public async Task<string> GetUserThemeAsync(int userId)
         {
             try
             {
                 using (var conn = _db.GetConnection())
                 {
-                    conn.Open();
+                    await conn.OpenAsync();
                     string query = "SELECT Motyw FROM dbo.Uzytkownik WHERE ID = @UserId";
                     using (var cmd = new SqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@UserId", userId);
-                        var result = cmd.ExecuteScalar();
+                        var result = await cmd.ExecuteScalarAsync();
                         return result != null && result != DBNull.Value ? result.ToString() : "Dark";
                     }
                 }

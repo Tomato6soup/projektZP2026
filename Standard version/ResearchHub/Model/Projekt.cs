@@ -18,6 +18,31 @@ namespace ResearchHub.Model
         public event PropertyChangedEventHandler PropertyChanged;
         private bool _czyUlubione;
         public bool CzyUlubione { get => _czyUlubione; set { _czyUlubione = value; OnPropertyChanged(); } }
+        // Nowa kolumna z bazy danych
+        private bool _czyRekrutacjaOtwarta;
+        public bool CzyRekrutacjaOtwarta
+        {
+            get => _czyRekrutacjaOtwarta;
+            set
+            {
+                if (_czyRekrutacjaOtwarta != value)
+                {
+                    _czyRekrutacjaOtwarta = value;
+                    OnPropertyChanged(); // Informuje o zmianie samej wartości bool
+
+                    // MUSIMY poinformować interfejs, że te dwa teksty też uległy zmianie!
+                    OnPropertyChanged(nameof(StatusTekst));
+                    OnPropertyChanged(nameof(PrzyciskRekrutacjiTekst));
+                }
+            }
+        }
+        // --- WŁAŚCIWOŚCI POMOCNICZE DLA INTERFEJSU ---
+        // (Nie są zapisywane do bazy, służą tylko do wyświetlania w WPF)
+
+        public string StatusTekst => CzyRekrutacjaOtwarta ? "OTWARTA" : "ZAMKNIĘTA";
+
+        public string PrzyciskRekrutacjiTekst => CzyRekrutacjaOtwarta ? "🔒 Zamknij rekrutację" : "🔓 Otwórz rekrutację";
+
 
         // 4. Metoda pomocnicza (dobra praktyka, znacznie upraszcza kod)
         protected void OnPropertyChanged([CallerMemberName] string name = null)

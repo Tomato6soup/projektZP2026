@@ -16,10 +16,10 @@ namespace ResearchHub.Model
         private bool _czyUlubione;
         public bool CzyUlubione { get => _czyUlubione; set { _czyUlubione = value; OnPropertyChanged(); } }
         // 3. To zdarzenie jest niezbędne, aby interfejs działał
-        public event PropertyChangedEventHandler? PropertyChanged;
+        public event PropertyChangedEventHandler PropertyChanged;
 
         // 4. Metoda pomocnicza (dobra praktyka, znacznie upraszcza kod)
-        protected void OnPropertyChanged([CallerMemberName] string? name = null)
+        protected void OnPropertyChanged([CallerMemberName] string name = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }

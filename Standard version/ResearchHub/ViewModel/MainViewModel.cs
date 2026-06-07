@@ -52,6 +52,8 @@ namespace ResearchHub.ViewModel
         public ObservableCollection<Konferencja> FavoriteConferences { get; set; }
         // NOWE: Kolekcja na projekty studenta
         public ObservableCollection<Projekt> MyProjectsList { get; set; }
+        //PRACOWNIK
+        public ObservableCollection<Projekt> ManagedProjectsList { get; set; }
         public ICollectionView ProjectsView { get; private set; }
         public ICollectionView ConferencesView { get; private set; }
         public ICollectionView PublicationsView { get; private set; }
@@ -62,6 +64,12 @@ namespace ResearchHub.ViewModel
         public ICommand JoinProjectCommand { get; }
         public ICommand LeaveProjectCommand { get; }
         public ICommand ChangeThemeCommand { get; }
+        public ICommand CreateConferenceCommand { get; }
+        //Pracownik
+        // Deklaracje komend
+        public ICommand CreateProjectCommand { get; }
+        public ICommand ToggleRecruitmentCommand { get; }
+        
         // ==========================================
         // 3. WŁAŚCIWOŚCI BINDOWANE DO XAML
         // ==========================================
@@ -74,6 +82,8 @@ namespace ResearchHub.ViewModel
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(IsAdmin));
                 OnPropertyChanged(nameof(IsStudent));
+                // Kluczowe: informujemy UI, że IsEmployee też się zmieniło!
+                OnPropertyChanged(nameof(IsEmployee));
             }
         }
 
@@ -85,6 +95,7 @@ namespace ResearchHub.ViewModel
 
         public bool IsAdmin => UserRole == "Administrator";
         public bool IsStudent => UserRole == "Student";
+        public bool IsEmployee => UserRole == "Pracownik";
         public string SearchText
         {
             get => _searchText;
@@ -151,28 +162,30 @@ namespace ResearchHub.ViewModel
             FavoriteProjects = new ObservableCollection<Projekt>();
             FavoriteConferences = new ObservableCollection<Konferencja>();
             EditProjectCommand = new RelayCommand(ExecuteEditProject);
+            //pracownik
+            ToggleRecruitmentCommand = new RelayCommand<Projekt>(ToggleRecruitment);
+            CreateProjectCommand = new RelayCommand(OpenCreateProjectWindow);
+            ManagedProjectsList = new ObservableCollection<Projekt>();
             EditConferenceCommand = new RelayCommand(ExecuteEditConference);
+            CreateConferenceCommand = new RelayCommand(ExecuteCreateConference);
             // 2. W konstruktorze MainViewModel:
             EditPublicationCommand = new RelayCommand(ExecuteEditPublication);
             SelectPhotoCommand = new RelayCommand(ExecuteSelectPhoto);
             JoinProjectCommand = new RelayCommand(ExecuteJoinProject);
             LeaveProjectCommand = new RelayCommand(ExecuteLeaveProject);
             _projectService = new ProjectParticipationService(_db);
-            LoadProjectsFromSql();
-            LoadConferencesFromSql();
-            LoadPublicationsFromSql();
-            LoadFavoritesFromSql();
+            //LoadProjectsFromSql();
+            //LoadConferencesFromSql();
+            //LoadPublicationsFromSql();
+            //LoadFavoritesFromSql();
 
             // Inicjalizacja serwisu motywów
             _themeService = new ThemeService(_db);
             ChangeThemeCommand = new RelayCommand(ExecuteChangeTheme);
 
-            // Ładowanie motywu użytkownika zapisanego w DB (wywołaj na końcu konstruktora, gdy znasz już CurrentUserId)
-            string savedTheme = _themeService.GetUserTheme(CurrentUserId);
-            _themeService.ApplyTheme(savedTheme);
-
-            if (IsStudent) LoadMyProjectsFromSql(); // Ładujemy tylko jeśli to student
-
+            
+            //if (IsStudent) LoadMyProjectsFromSql(); // Ładujemy tylko jeśli to student
+            _ = InitializeDataAsync();
             // Dla publikacji:
             PublicationsView = CollectionViewSource.GetDefaultView(PublicationsList);
             PublicationsView.Filter = (obj) => FilterHelper.FilterPublications(obj, SearchText, SelectedTypeFilter);
@@ -195,7 +208,8 @@ namespace ResearchHub.ViewModel
             FavoriteConferenceCommand = new RelayCommand(id => ExecuteToggleFavorite(id, "Konferencja"));
 
             DeletePublicationCommand = new RelayCommand(id => ExecuteDeleteElement(id, "Publikacja"), CanExecuteAdminAction);
-            DeleteProjectCommand = new RelayCommand(id => ExecuteDeleteElement(id, "Projekt"), CanExecuteAdminAction);
+            // Pracownik też będzie mógł teraz kliknąć przycisk "Usuń"
+            DeleteProjectCommand = new RelayCommand(id => ExecuteDeleteElement(id, "Projekt"));
             DeleteConferenceCommand = new RelayCommand(id => ExecuteDeleteElement(id, "Konferencja"), CanExecuteAdminAction);
         }
 
@@ -212,16 +226,109 @@ namespace ResearchHub.ViewModel
             if (val is decimal d) return (int)d;
             return int.TryParse(val?.ToString(), out var parsed) ? parsed : 0;
         }
+        // --- LOGIKA KOMEND DLA PRACOWNIKA ---
 
-        private void LoadMyProjectsFromSql()
+        private async void OpenCreateProjectWindow(object obj)
+        {
+            // Otwieramy okno formularza
+            AddEditProjectWindow addWindow = new();
+
+            // Jeśli użytkownik wypełnił formularz i kliknął "Zapisz" (DialogResult = true)
+            if (addWindow.ShowDialog() == true)
+            {
+                try
+                {
+                    // 1. Pobieramy uzupełniony obiekt z okna dialogowego
+                    Projekt nowyProjekt = addWindow.EdytowanyProjekt;
+
+                    // 2. Otwieramy połączenie z bazą danych (dostosuj obiekt _db do swojego kodu)
+                    using var conn = _db.GetConnection();
+                    await conn.OpenAsync();
+
+                    // 3. Przygotowujemy zapytanie SQL INSERT INTO
+                    string query = @"
+                INSERT INTO dbo.Projekt 
+                (Tytul, Opis, DataRozpoczecia, DataZakonczenia, Zdjecie, CzyRekrutacjaOtwarta)
+                VALUES 
+                (@Tytul, @Opis, @DataRozpoczecia, @DataZakonczenia, @NazwaPlikuZdjecia, @CzyRekrutacjaOtwarta)";
+
+                    // 4. Tworzymy komendę i bezpiecznie przekazujemy parametry
+                    using SqlCommand cmd = new(query, conn);
+
+                    cmd.Parameters.AddWithValue("@Tytul", nowyProjekt.Tytul);
+
+                    // Używamy operatora ?? i DBNull.Value na wypadek, gdyby Opis lub Zdjęcie były puste (null)
+                    cmd.Parameters.AddWithValue("@Opis", string.IsNullOrWhiteSpace(nowyProjekt.Opis) ? DBNull.Value : nowyProjekt.Opis);
+                    cmd.Parameters.AddWithValue("@DataRozpoczecia", nowyProjekt.DataRozpoczecia);
+                    cmd.Parameters.AddWithValue("@DataZakonczenia", nowyProjekt.DataZakonczenia);
+                    cmd.Parameters.AddWithValue("@NazwaPlikuZdjecia", string.IsNullOrWhiteSpace(nowyProjekt.NazwaPlikuZdjecia) ? DBNull.Value : nowyProjekt.NazwaPlikuZdjecia);
+                    cmd.Parameters.AddWithValue("@CzyRekrutacjaOtwarta", nowyProjekt.CzyRekrutacjaOtwarta);
+
+                    // 5. Wykonujemy zapytanie w bazie
+                    await cmd.ExecuteNonQueryAsync();
+
+                    // 6. Odświeżamy listę projektów w WPF, aby zobaczyć nowy wpis
+                    await LoadProjectsFromSql();
+                }
+                catch (Exception ex)
+                {
+                    // Pokazujemy komunikat, jeśli wystąpi błąd z bazą (np. brak połączenia)
+                    MessageBox.Show($"Wystąpił błąd podczas dodawania projektu: {ex.Message}",
+                                    "Błąd bazy danych",
+                                    MessageBoxButton.OK,
+                                    MessageBoxImage.Error);
+                }
+            }
+        }
+
+        private async void ToggleRecruitment(Projekt projekt)
+        {
+            if (projekt == null) return;
+            // 1. Zmiana stanu w pamięci aplikacji (dzięki INotifyPropertyChanged UI od razu to zauważy)
+            projekt.CzyRekrutacjaOtwarta = !projekt.CzyRekrutacjaOtwarta;
+
+            try
+            {
+                using (var conn = _db.GetConnection())
+                {
+                    await conn.OpenAsync();
+
+                    // Odwracamy obecny stan rekrutacji bezpośrednio przed zapisem do bazy
+                    bool nowyStanRekrutacji = !projekt.CzyRekrutacjaOtwarta;
+
+                    string query = "UPDATE dbo.Projekt SET CzyRekrutacjaOtwarta = @CzyRekrutacjaOtwarta WHERE ID = @ID";
+
+                    using (SqlCommand cmd = new(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@CzyRekrutacjaOtwarta", projekt.CzyRekrutacjaOtwarta);
+                        cmd.Parameters.AddWithValue("@ID", projekt.ID);
+
+                        await cmd.ExecuteNonQueryAsync();
+                    }
+                }
+
+                // Po pomyślnej aktualizacji bazy, odświeżamy całą kolekcję ManagedProjectsList
+                await LoadProjectsFromSql();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Błąd podczas zmiany statusu rekrutacji: {ex.Message}",
+                                "Błąd bazy danych",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Error);
+                // Wycofujemy zmianę w UI, skoro baza nie zapisała zmiany
+                projekt.CzyRekrutacjaOtwarta = !projekt.CzyRekrutacjaOtwarta;
+            }
+        }
+        private async Task LoadMyProjectsFromSql()
         {
             try
             {
                 using (var conn = _db.GetConnection())
                 {
-                    conn.Open();
+                    await conn.OpenAsync();
                     string query = @"
-                        SELECT p.ID, p.Tytul, p.Opis, p.DataRozpoczecia, p.DataZakonczenia, p.Zdjecie 
+                        SELECT p.ID, p.Tytul, p.Opis, p.DataRozpoczecia, p.DataZakonczenia, p.Zdjecie,p.CzyRekrutacjaOtwarta
                         FROM dbo.Projekt p 
                         JOIN dbo.ProjektStudenci ps ON p.ID = ps.ProjektID 
                         WHERE ps.StudentID = @UserId";
@@ -229,10 +336,10 @@ namespace ResearchHub.ViewModel
                     using (var cmd = new SqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@UserId", CurrentUserId);
-                        using (var reader = cmd.ExecuteReader())
+                        using (var reader = await cmd.ExecuteReaderAsync())
                         {
                             MyProjectsList.Clear();
-                            while (reader.Read())
+                            while (await reader.ReadAsync())
                             {
                                 var projekt = new Projekt(
                                     ReadInt(reader, 0),
@@ -242,6 +349,7 @@ namespace ResearchHub.ViewModel
                                     reader.GetDateTime(4)
                                 );
                                 projekt.NazwaPlikuZdjecia = reader.IsDBNull(5) ? "" : reader.GetString(5);
+                                projekt.CzyRekrutacjaOtwarta = !reader.IsDBNull(6) && Convert.ToBoolean(reader.GetValue(6));
                                 projekt.CzyDolaczono = true;
                                 MyProjectsList.Add(projekt);
                             }
@@ -254,28 +362,28 @@ namespace ResearchHub.ViewModel
                 MessageBox.Show($"Błąd ładowania Twoich projektów: {ex.Message}");
             }
         }
-        private void LoadFavoritesFromSql()
+        private async Task LoadFavoritesFromSql()
         {
             try
             {
                 using (var conn = _db.GetConnection())
                 {
-                    conn.Open();
+                    await conn.OpenAsync();
 
                     // 1. Publikacje - jawna kolejność indeksów: 0:ID, 1:Tytul, 2:Rok_Wydania, 3:Typ, 4:Wydawnictwo, 5:PlikPDF, 6:Strony, 7:Zdjecie
                     string queryPub = @"SELECT p.ID, p.Tytul, p.Rok_Wydania, p.Typ, p.Wydawnictwo, p.PlikPDF, p.Strony, p.Zdjecie 
                                 FROM dbo.Publikacja p 
                                 JOIN dbo.Ulubione u ON p.ID = u.ElementID 
                                 WHERE u.TypElementu = 'Publikacja' AND u.UzytkownikID = @UserId";
-                    LoadSpecificFavorites(conn, queryPub, "Publikacja");
+                    await LoadSpecificFavorites(conn, queryPub, "Publikacja");
 
                     // 2. Projekty - jawna kolejność indeksów: 0:ID, 1:Tytul, 2:Opis, 3:DataRozpoczecia, 4:DataZakonczenia, 5:Zdjecie
                     // UWAGA: Upewnij się, że nazwy kolumn (Tytul, Opis itd.) są identyczne jak w Twojej bazie!
-                    string queryProj = @"SELECT p.ID, p.Tytul, p.Opis, p.DataRozpoczecia, p.DataZakonczenia, p.Zdjecie 
+                    string queryProj = @"SELECT p.ID, p.Tytul, p.Opis, p.DataRozpoczecia, p.DataZakonczenia, p.Zdjecie,p.CzyRekrutacjaOtwarta
                                  FROM dbo.Projekt p 
                                  JOIN dbo.Ulubione u ON p.ID = u.ElementID 
                                  WHERE u.TypElementu = 'Projekt' AND u.UzytkownikID = @UserId";
-                    LoadSpecificFavorites(conn, queryProj, "Projekt");
+                    await LoadSpecificFavorites(conn, queryProj, "Projekt");
 
                     // 3. Konferencje - jawna kolejność indeksów: 0:ID, 1:Nazwa, 2:Data, 3:Miejsce, 4:Zdjecie
                     // UWAGA: Upewnij się, że nazwy kolumn (Nazwa, Data, Miejsce, Zdjecie) są identyczne jak w Twojej bazie!
@@ -283,7 +391,7 @@ namespace ResearchHub.ViewModel
                                  FROM dbo.Konferencja k 
                                  JOIN dbo.Ulubione u ON k.ID = u.ElementID 
                                  WHERE u.TypElementu = 'Konferencja' AND u.UzytkownikID = @UserId";
-                    LoadSpecificFavorites(conn, queryConf, "Konferencja");
+                    await LoadSpecificFavorites(conn, queryConf, "Konferencja");
                 }
             }
             catch (Exception ex)
@@ -292,16 +400,37 @@ namespace ResearchHub.ViewModel
             }
         }
         // Pomocnicza metoda do ładowania konkretnego typu
-        private void LoadSpecificFavorites(SqlConnection conn, string query, string type)
+        private async Task InitializeDataAsync()
+        {
+
+            // Ładowanie motywu użytkownika zapisanego w DB (wywołaj na końcu konstruktora, gdy znasz już CurrentUserId)
+            string savedTheme = await _themeService.GetUserThemeAsync(CurrentUserId);
+            _themeService.ApplyTheme(savedTheme);
+
+            // Czekamy na załadowanie głównych list z bazy, nie blokując UI!
+            await LoadProjectsFromSql();
+            await LoadConferencesFromSql();
+            await LoadPublicationsFromSql();
+
+            // Jeśli przerobisz te dwie poniższe na async Task, dopisz przed nimi 'await'
+            // Jeśli jeszcze są zwykłymi metodami void, zostaw je tak jak poniżej:
+            await LoadFavoritesFromSql();
+
+            if (IsStudent)
+            {
+                await LoadMyProjectsFromSql();
+            }
+        }
+        private async Task LoadSpecificFavorites(SqlConnection conn, string query, string type)
         {
             using (var cmd = new SqlCommand(query, conn))
             {
                 cmd.Parameters.AddWithValue("@UserId", CurrentUserId);
-                using (var reader = cmd.ExecuteReader())
+                using (var reader = await cmd.ExecuteReaderAsync())
                 {
                     if (type == "Publikacja")
                     {
-                        FavoritePublications.Clear(); while (reader.Read())
+                        FavoritePublications.Clear(); while (await reader.ReadAsync())
                         {
                             //                        Tutaj analogiczne mapowanie jak w LoadPublicationsFromSql
                             var pub = new Publikacja(
@@ -319,7 +448,7 @@ namespace ResearchHub.ViewModel
                     }
                     else if (type == "Projekt")
                     {
-                        FavoriteProjects.Clear(); while (reader.Read())
+                        FavoriteProjects.Clear(); while (await reader.ReadAsync())
                         {
                             var projekt = new Projekt(
                             ReadInt(reader, 0),
@@ -329,6 +458,7 @@ namespace ResearchHub.ViewModel
                             reader.GetDateTime(4)
                            );
                             projekt.NazwaPlikuZdjecia = reader.IsDBNull(5) ? "" : reader.GetString(5);
+                            projekt.CzyRekrutacjaOtwarta = !reader.IsDBNull(6) && Convert.ToBoolean(reader.GetValue(6));
                             FavoriteProjects.Add(projekt);
 
 
@@ -338,7 +468,7 @@ namespace ResearchHub.ViewModel
                     {
                         FavoriteConferences.Clear(); // Tego brakowało
 
-                        while (reader.Read())        // Tego brakowało
+                        while (await reader.ReadAsync())        // Tego brakowało
                         {
                             var konferencja = new Konferencja(
                                  ReadInt(reader, 0),
@@ -386,7 +516,7 @@ namespace ResearchHub.ViewModel
                 NewPhoto = openFileDialog.FileName;
             }
         }
-        private void ExecuteJoinProject(object obj)
+        private async void ExecuteJoinProject(object obj)
         {
             if (!IsStudent)
             {
@@ -397,7 +527,7 @@ namespace ResearchHub.ViewModel
 
             try
             {
-                _projectService.JoinProject(projektId, CurrentUserId);
+                await _projectService.JoinProjectAsync(projektId, CurrentUserId);
 
                 UpdateProjectStatus(projektId); // Metoda aktualizująca UI
                 MessageBox.Show("Udało się! Dołączyłeś do projektu.", "Sukces", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -413,7 +543,7 @@ namespace ResearchHub.ViewModel
             }
         }
 
-        private void ExecuteLeaveProject(object obj)
+        private async void ExecuteLeaveProject(object obj)
         {
             if (!IsStudent) return;
             if (obj == null || !int.TryParse(obj.ToString(), out int projektId)) return;
@@ -423,7 +553,7 @@ namespace ResearchHub.ViewModel
 
             try
             {
-                _projectService.LeaveProject(projektId, CurrentUserId);
+                await _projectService.LeaveProjectAsync(projektId, CurrentUserId);
 
                 // Aktualizacja UI (zostaje w ViewModel, bo to on "posiada" te listy)
                 var projektNaGlownej = ProjectsList?.FirstOrDefault(p => p.ID == projektId);
@@ -456,9 +586,9 @@ namespace ResearchHub.ViewModel
         }
 
 
-        private void ExecuteEditProject(object obj)
+        private async void ExecuteEditProject(object obj)
         {
-            if (!IsAdmin)
+            if (!IsAdmin && !IsEmployee)
             {
                 MessageBox.Show("Brak uprawnień administratora.");
                 return;
@@ -472,15 +602,15 @@ namespace ResearchHub.ViewModel
                 if (result == true)
                 {
                     // 1. Odświeżamy główną listę projektów (wpisz swoją dokładną nazwę metody)
-                    LoadProjectsFromSql();
+                    await LoadProjectsFromSql();
 
                     // 2. Odświeżamy ulubione
-                    LoadFavoritesFromSql();
+                    await LoadFavoritesFromSql();
                 }
             }
         }
 
-        private void ExecuteEditConference(object obj)
+        private async void ExecuteEditConference(object obj)
         {
             if (!IsAdmin)
             {
@@ -496,11 +626,54 @@ namespace ResearchHub.ViewModel
                 if (result == true)
                 {
                     // Pamiętaj o odświeżeniu głównych list! Wywołaj tu swoje metody ładujące.
-                    LoadFavoritesFromSql();
+                    await LoadFavoritesFromSql();
+                    await LoadConferencesFromSql();
                 }
             }
         }
-        private void ExecuteEditPublication(object obj)
+        private async void ExecuteCreateConference(object obj)
+        {
+            // Otwieramy nasze nowe okienko
+            var addWindow = new AddConferenceWindow();
+
+            // Jeśli pracownik wypełnił i kliknął "Zapisz"
+            if (addWindow.ShowDialog() == true)
+            {
+                try
+                {
+                    Konferencja nowaKonf = addWindow.EdytowanaKonferencja;
+
+                    using (var conn = _db.GetConnection())
+                    {
+                        await conn.OpenAsync();
+
+                        string query = @"
+                    INSERT INTO dbo.Konferencja (Nazwa, Data, Miejsce, Zdjecie) 
+                    VALUES (@Nazwa, @Data, @Miejsce, @Zdjecie)";
+
+                        using (var cmd = new SqlCommand(query, conn))
+                        {
+                            cmd.Parameters.AddWithValue("@Nazwa", nowaKonf.Nazwa);
+                            cmd.Parameters.AddWithValue("@Data", nowaKonf.Data);
+                            cmd.Parameters.AddWithValue("@Miejsce", nowaKonf.Miejsce);
+                            cmd.Parameters.AddWithValue("@Zdjecie", string.IsNullOrWhiteSpace(nowaKonf.NazwaPlikuZdjecia) ? DBNull.Value : nowaKonf.NazwaPlikuZdjecia);
+
+                            // Uwalniamy wątek podczas zapisu!
+                            await cmd.ExecuteNonQueryAsync();
+                        }
+                    }
+
+                    // Odświeżamy asynchronicznie listę, żeby nowa konferencja od razu się pojawiła
+                    await LoadConferencesFromSql();
+                    MessageBox.Show("Pomyślnie dodano konferencję!", "Sukces", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Wystąpił błąd podczas dodawania do bazy: {ex.Message}", "Błąd SQL", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+        private async void ExecuteEditPublication(object obj)
         {
             if (!IsAdmin)
             {
@@ -520,23 +693,23 @@ namespace ResearchHub.ViewModel
                 if (result == true)
                 {
                     // 1. Odświeżamy główną listę publikacji (wpisz swoją dokładną nazwę metody)
-                    LoadPublicationsFromSql();
+                    await LoadPublicationsFromSql();
 
                     // 2. Odświeżamy też ulubione, na wypadek gdyby edytowano element będący w ulubionych
-                    LoadFavoritesFromSql();
+                    await LoadFavoritesFromSql();
                 }
             }
         }
-        private void LoadProjectsFromSql()
+        private async Task LoadProjectsFromSql()
         {
             try
             {
                 using (var conn = _db.GetConnection())
                 {
-                    conn.Open();
+                    await conn.OpenAsync();
                     // Zmienione zapytanie - sprawdza Ulubione i Dołączone za pomocą LEFT JOIN
                     string query = @"
-                        SELECT p.ID, p.Tytul, p.Opis, p.DataRozpoczecia, p.DataZakonczenia, p.Zdjecie,
+                        SELECT p.ID, p.Tytul, p.Opis, p.DataRozpoczecia, p.DataZakonczenia, p.Zdjecie,p.CzyRekrutacjaOtwarta,
                                CASE WHEN u.ElementID IS NOT NULL THEN 1 ELSE 0 END AS CzyUlubione,
                                CASE WHEN ps.ProjektID IS NOT NULL THEN 1 ELSE 0 END AS CzyDolaczono
                         FROM dbo.Projekt p
@@ -546,10 +719,11 @@ namespace ResearchHub.ViewModel
                     {
                         // TA LINIJKA NAPRAWIA BŁĄD (przekazuje wartość ID logującego się użytkownika do SQL)
                         cmd.Parameters.AddWithValue("@UserId", CurrentUserId);
-                        using (var reader = cmd.ExecuteReader())
+                        using (var reader = await cmd.ExecuteReaderAsync())
                         {
                             ProjectsList.Clear();
-                            while (reader.Read())
+                            ManagedProjectsList.Clear();
+                            while (await reader.ReadAsync())
                             {
                                 var projekt = new Projekt(
                                  ReadInt(reader, 0),
@@ -559,9 +733,14 @@ namespace ResearchHub.ViewModel
                                  reader.GetDateTime(4)
                                 );
                                 projekt.NazwaPlikuZdjecia = reader.IsDBNull(5) ? "" : reader.GetString(5);
-                                projekt.CzyUlubione = ReadInt(reader, 6) == 1;
-                                projekt.CzyDolaczono = ReadInt(reader, 7) == 1;
+                                projekt.CzyRekrutacjaOtwarta = !reader.IsDBNull(6) && Convert.ToBoolean(reader.GetValue(6));
+
+                                // ZMIANA 3: Skoro dodaliśmy rekrutację na pozycję 6, 
+                                // Ulubione i Dołączone przesuwają się na pozycję 7 i 8!
+                                projekt.CzyUlubione = ReadInt(reader, 7) == 1;
+                                projekt.CzyDolaczono = ReadInt(reader, 8) == 1;
                                 ProjectsList.Add(projekt);
+                                ManagedProjectsList.Add(projekt);
                             }
                         }
                     }
@@ -573,13 +752,13 @@ namespace ResearchHub.ViewModel
             }
         }
 
-        private void LoadConferencesFromSql()
+        private async Task LoadConferencesFromSql()
         {
             try
             {
                 using (var conn = _db.GetConnection())
                 {
-                    conn.Open();
+                    await conn.OpenAsync();
                     //   string query = "SELECT ID, Nazwa, Data, Miejsce, Zdjecie FROM dbo.Konferencja";
                     string query = @"
                         SELECT k.ID, k.Nazwa, k.Data, k.Miejsce, k.Zdjecie,
@@ -589,10 +768,10 @@ namespace ResearchHub.ViewModel
                     using (var cmd = new SqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@UserId", CurrentUserId);
-                        using (var reader = cmd.ExecuteReader())
+                        using (var reader = await  cmd.ExecuteReaderAsync())
                         {
                             ConferencesList.Clear();
-                            while (reader.Read())
+                            while (await reader.ReadAsync())
                             {
                                 var konferencja = new Konferencja(
                                  ReadInt(reader, 0),
@@ -614,13 +793,14 @@ namespace ResearchHub.ViewModel
             }
         }
 
-        private void LoadPublicationsFromSql()
+        private async Task LoadPublicationsFromSql()
         {
             try
             {
                 using (var conn = _db.GetConnection())
                 {
-                    conn.Open();
+
+                    await conn.OpenAsync();
                     //  string query = "SELECT ID, Tytul, Rok_Wydania, Typ, Wydawnictwo, PlikPDF, Strony, Zdjecie FROM dbo.Publikacja";
                     string query = @"
                         SELECT p.ID, p.Tytul, p.Rok_Wydania, p.Typ, p.Wydawnictwo, p.PlikPDF, p.Strony, p.Zdjecie,
@@ -630,10 +810,10 @@ namespace ResearchHub.ViewModel
                     using (var cmd = new SqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@UserId", CurrentUserId);
-                        using (var reader = cmd.ExecuteReader())
+                        using (var reader = await cmd.ExecuteReaderAsync())
                         {
                             PublicationsList.Clear();
-                            while (reader.Read())
+                            while (await reader.ReadAsync())
                             {
                                 var pub = new Publikacja(
                                     ReadInt(reader, 0),
@@ -685,7 +865,7 @@ namespace ResearchHub.ViewModel
             return IsAdmin && !string.IsNullOrWhiteSpace(NewTitle) && NewPages > 0;
         }
 
-        private void ExecuteAddPublication(object obj)
+        private async void ExecuteAddPublication(object obj)
         {
             if (!IsAdmin) return;
 
@@ -693,7 +873,7 @@ namespace ResearchHub.ViewModel
             {
                 using (var conn = _db.GetConnection())
                 {
-                    conn.Open();
+                    await conn.OpenAsync();
                     string query = "INSERT INTO dbo.Publikacja (Tytul, Rok_Wydania, Typ, Wydawnictwo, PlikPDF, Strony, Zdjecie) " +
                                    "VALUES (@Tytul, @Rok, @Typ, @Wydawnictwo, @Pdf, @Strony, @Zdjecie); SELECT SCOPE_IDENTITY();";
                     using (var cmd = new SqlCommand(query, conn))
@@ -706,7 +886,7 @@ namespace ResearchHub.ViewModel
                         cmd.Parameters.AddWithValue("@Strony", NewPages);
                         cmd.Parameters.AddWithValue("@Zdjecie", string.IsNullOrWhiteSpace(NewPhoto) ? (object)DBNull.Value : NewPhoto);
 
-                        int insertedId = Convert.ToInt32(cmd.ExecuteScalar());
+                        int insertedId = Convert.ToInt32(await cmd.ExecuteScalarAsync());
 
                         var nowaPublikacja = new Publikacja(
                             insertedId, NewTitle, NewYear, NewType, NewPublisher,
@@ -728,10 +908,10 @@ namespace ResearchHub.ViewModel
             }
         }
 
-        private void ExecuteDeleteElement(object obj, string tableName)
+        private async void ExecuteDeleteElement(object obj, string tableName)
         {
             // 1. Sprawdź uprawnienia z komunikatem
-            if (!IsAdmin)
+            if (!IsAdmin && !IsEmployee)
             {
                 MessageBox.Show("Nie masz uprawnień administratora!", "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
@@ -751,7 +931,7 @@ namespace ResearchHub.ViewModel
             {
                 using (var conn = _db.GetConnection())
                 {
-                    conn.Open();
+                    await conn.OpenAsync();
 
                     // ROZPOCZYNAMY TRANSAKCJĘ
                     using (var transaction = conn.BeginTransaction())
@@ -764,7 +944,7 @@ namespace ResearchHub.ViewModel
                             {
                                 cmdFav.Parameters.AddWithValue("@Id", id);
                                 cmdFav.Parameters.AddWithValue("@Typ", tableName);
-                                cmdFav.ExecuteNonQuery();
+                                await cmdFav.ExecuteNonQueryAsync();
                             }
 
                             // Krok B: Odpięcie klucza obcego, jeśli usuwamy PROJEKT
@@ -775,7 +955,7 @@ namespace ResearchHub.ViewModel
                                 using (var cmdOdepnij = new SqlCommand(odepnijProjekt, conn, transaction))
                                 {
                                     cmdOdepnij.Parameters.AddWithValue("@Id", id);
-                                    cmdOdepnij.ExecuteNonQuery();
+                                    await cmdOdepnij.ExecuteNonQueryAsync();
                                 }
                             }
 
@@ -784,7 +964,7 @@ namespace ResearchHub.ViewModel
                             using (var cmd = new SqlCommand(query, conn, transaction))
                             {
                                 cmd.Parameters.AddWithValue("@Id", id);
-                                cmd.ExecuteNonQuery();
+                                await cmd.ExecuteNonQueryAsync();
                             }
 
                             // ZATWIERDZENIE TRANSAKCJI - wszystkie 3 kroki się udały
@@ -809,13 +989,16 @@ namespace ResearchHub.ViewModel
                 {
                     var item = ProjectsList.FirstOrDefault(x => x.ID == id);
                     if (item != null) ProjectsList.Remove(item);
+                    // Usuwamy z listy menedżera
+                    var managedItem = ManagedProjectsList.FirstOrDefault(x => x.ID == id);
+                    if (managedItem != null) ManagedProjectsList.Remove(managedItem);
                 }
                 else if (tableName == "Konferencja")
                 {
                     var item = ConferencesList.FirstOrDefault(x => x.ID == id);
                     if (item != null) ConferencesList.Remove(item);
                 }
-                LoadFavoritesFromSql(); // Odśwież zakładkę Ulubione po usunięciu
+                await LoadFavoritesFromSql(); // Odśwież zakładkę Ulubione po usunięciu
 
                 MessageBox.Show("Element został pomyślnie usunięty.", "Sukces", MessageBoxButton.OK, MessageBoxImage.Information);
             }
@@ -825,7 +1008,7 @@ namespace ResearchHub.ViewModel
             }
         }
 
-        private void ExecuteToggleFavorite(object obj, string elementType)
+        private async void ExecuteToggleFavorite(object obj, string elementType)
         {
             if (!(obj is int elementId)) return;
 
@@ -833,7 +1016,7 @@ namespace ResearchHub.ViewModel
             {
                 using (var conn = _db.GetConnection())
                 {
-                    conn.Open();
+                    await conn.OpenAsync();
                     string checkQuery = "SELECT COUNT(1) FROM dbo.Ulubione WHERE UzytkownikID = @UserId AND ElementID = @ElementId AND TypElementu = @Type";
                     bool exists;
 
@@ -842,7 +1025,7 @@ namespace ResearchHub.ViewModel
                         checkCmd.Parameters.AddWithValue("@UserId", CurrentUserId);
                         checkCmd.Parameters.AddWithValue("@ElementId", elementId);
                         checkCmd.Parameters.AddWithValue("@Type", elementType);
-                        exists = (int)checkCmd.ExecuteScalar() > 0;
+                        exists = (int)await checkCmd.ExecuteScalarAsync() > 0;
                     }
 
                     if (exists)
@@ -853,7 +1036,7 @@ namespace ResearchHub.ViewModel
                             deleteCmd.Parameters.AddWithValue("@UserId", CurrentUserId);
                             deleteCmd.Parameters.AddWithValue("@ElementId", elementId);
                             deleteCmd.Parameters.AddWithValue("@Type", elementType);
-                            deleteCmd.ExecuteNonQuery();
+                            await deleteCmd.ExecuteNonQueryAsync();
                         }
                         MessageBox.Show("Usunięto z ulubionych.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
                     }
@@ -865,7 +1048,7 @@ namespace ResearchHub.ViewModel
                             insertCmd.Parameters.AddWithValue("@UserId", CurrentUserId);
                             insertCmd.Parameters.AddWithValue("@ElementId", elementId);
                             insertCmd.Parameters.AddWithValue("@Type", elementType);
-                            insertCmd.ExecuteNonQuery();
+                            await insertCmd.ExecuteNonQueryAsync();
                         }
                       //  MessageBox.Show("Dodano do ulubionych! ⭐", "Sukces", MessageBoxButton.OK, MessageBoxImage.Information);
                     }
@@ -892,7 +1075,7 @@ namespace ResearchHub.ViewModel
             {
                 MessageBox.Show($"Błąd systemu ulubionych: {ex.Message}", "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
             }
-            LoadFavoritesFromSql();
+            await LoadFavoritesFromSql();
           //  MessageBox.Show("Zaktualizowano listę ulubionych.");
         }
 
@@ -914,8 +1097,8 @@ namespace ResearchHub.ViewModel
         // ==========================================
         // 8. OBSŁUGA ZDARZEŃ
         // ==========================================
-        public event PropertyChangedEventHandler? PropertyChanged;
-        protected void OnPropertyChanged([CallerMemberName] string? name = null)
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected void OnPropertyChanged([CallerMemberName] string name = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
