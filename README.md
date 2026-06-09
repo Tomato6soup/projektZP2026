@@ -84,12 +84,14 @@ Aplikacja oferuje szeroki zakres funkcji dla różnych typów użytkowników:
 <details>
 <summary><b>Kliknij, aby zobaczyć strukturę encji</b></summary>
 
-- **Użytkownik:** `ID, Login, Hasło, Email, Rola, DataRejestracji`
-- **Publikacja:** `ID, Tytuł, Rok_Wydania, Typ, Wydawnictwo, PlikPDF, Strony`
-- **Projekt:** `ID, Tytuł, Opis, DataRozpoczecia, DataZakonczenia`
-- **Pracownik:** `ID, Imię, Nazwisko, Stanowisko, Wydział, Adres, E-mail`
+- **Użytkownik:** `ID, Login, Hasło, Email, Rola, DataRejestracji, Motyw`
+- **Ulubione:** `ID, UzytkownikID, ElementID, TypElementu, DataDodania`
+- **Pracownik:** `ID, Imie, Nazwisko, Stanowisko, Wydział, Adres, Email`
+- **Publikacja:** `ID, Tytul, Rok_Wydania, Typ, Wydawnictwo, PlikPDF, Strony, PracownikID, ProjektID, StronaID, Zdjecie`
 - **Strona:** `ID, Nazwa, Typ, Kraj`
-- **Konferencja:** `ID, Nazwa, Data, Miejsce`
+- **Projekt:** `ID, Tytul, Opis, DataRozpoczecia, DataZakonczenia, WydzialID, Zdjecie`
+- **ProjektStudenci:** `ProjektID, StudentID, DataDolaczenia`
+- **Konferencja:** `ID, Nazwa, Data, Miejsce, Zdjecie`
 - **Wydział:** `ID, Nazwa`
 </details>
 
